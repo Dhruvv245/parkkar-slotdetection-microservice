@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+requests
+opencv-python
+numpy
+cvzone

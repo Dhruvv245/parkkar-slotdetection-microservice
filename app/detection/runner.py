@@ -43,6 +43,7 @@ def stream_video_and_detect(parking_id: str, script_path: str):
     """Stream video with detection using proper MJPEG format"""
     import subprocess
     
+    # Start process with binary stdout to handle MJPEG data
     process = subprocess.Popen(
         [PYTHON_EXECUTABLE, "-u", script_path, "--stream"],
         stdout=subprocess.PIPE,
@@ -58,24 +59,33 @@ def stream_video_and_detect(parking_id: str, script_path: str):
             if not data:
                 break
             
-            # Yield the raw data as received from the script
+            # Yield the raw binary data as received from the script
             yield data
 
     except GeneratorExit:
         # Handle client disconnect (browser closes tab)
-        process.kill()
-        print(f"[stream_video_and_detect] Client disconnected, killed process for {parking_id}")
+        process.terminate()
+        print(f"[stream_video_and_detect] Client disconnected, terminated process for {parking_id}")
 
     except Exception as e:
-        process.kill()
+        process.terminate()
         print(f"[stream_video_and_detect] Unexpected error: {e}")
 
     finally:
         try:
+            process.terminate()
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
             process.kill()
         except:
             pass
-        err = process.stderr.read()
-        if err:
-            print(f"[stream_video_and_detect stderr] {err.decode()}")
+        
+        # Read any remaining stderr output
+        try:
+            if process.stderr:
+                err = process.stderr.read()
+                if err:
+                    print(f"[stream_video_and_detect stderr] {err.decode()}")
+        except:
+            pass
 

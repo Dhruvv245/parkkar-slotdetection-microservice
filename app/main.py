@@ -73,16 +73,26 @@ def run_detection(parking_id: str):
 
 @app.get("/stream/{parking_id}")
 def stream_and_detect(parking_id: str):
+    """Stream video with real-time parking detection"""
     if parking_id not in PARKING_SCRIPTS:
         raise HTTPException(status_code=404, detail="Invalid parking lot ID")
 
     script_name = PARKING_SCRIPTS[parking_id]
     script_path = os.path.join(os.path.dirname(__file__), "detection", "scripts", script_name)
+    
+    # Check if script file exists
+    if not os.path.exists(script_path):
+        logger.error(f"Detection script not found: {script_path}")
+        raise HTTPException(status_code=404, detail="Detection script not found")
 
-    return StreamingResponse(
-        stream_video_and_detect(parking_id, script_path),
-        media_type="multipart/x-mixed-replace; boundary=frame"
-    )
+    try:
+        return StreamingResponse(
+            stream_video_and_detect(parking_id, script_path),
+            media_type="multipart/x-mixed-replace; boundary=frame"
+        )
+    except Exception as e:
+        logger.error(f"Error starting stream for {parking_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to start video stream")
 
 if __name__ == "__main__":
     import uvicorn

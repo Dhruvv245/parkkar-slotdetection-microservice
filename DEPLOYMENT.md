@@ -13,6 +13,7 @@ This microservice is configured for deployment on Railway using GitHub integrati
 ### Environment Variables
 
 The service will automatically use:
+
 - `NODE_SERVER_URL`: Points to your main ParkKar production service
 - `PORT`: Automatically set by Railway
 
@@ -29,7 +30,7 @@ Once deployed, the service provides:
 ### Parking Lot IDs
 
 - CB Parking: `5c88fa8cf4afda39709c2974`
-- Chemistry Parking: `5c88fa8cf4afda39709c2970` 
+- Chemistry Parking: `5c88fa8cf4afda39709c2970`
 - Workshop Parking: `661661e96104b67c07d092ec`
 - KBH Parking: `68700289a320c9d36bd397a4`
 

@@ -2,13 +2,27 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import os
+import logging
 from app.detection.runner import run_detection_script, stream_video_and_detect
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="ParkKar Slot Detection API",
     description="Real-time parking slot detection and streaming service",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("ParkKar Detection Service starting up...")
+    logger.info(f"Available parking scripts: {len(PARKING_SCRIPTS)}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("ParkKar Detection Service shutting down...")
 
 # Map of parking lot IDs to script names
 PARKING_SCRIPTS = {
@@ -28,7 +42,17 @@ def root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "parkkar-detection"}
+    """Health check endpoint for Railway deployment"""
+    try:
+        return {
+            "status": "healthy", 
+            "service": "parkkar-detection",
+            "version": "1.0.0",
+            "parking_lots_available": len(PARKING_SCRIPTS)
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(status_code=503, detail="Service unhealthy")
 
 @app.get("/parking-lots")
 def get_parking_lots():

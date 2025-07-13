@@ -1,6 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
 requests
-opencv-python
+opencv-python-headless
 numpy
 cvzone
+pydantic

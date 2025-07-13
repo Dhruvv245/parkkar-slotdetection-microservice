@@ -22,8 +22,8 @@ PARKING_ID = "5c88fa8cf4afda39709c2970"
 
 # Video feed
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-video_path = os.path.join(BASE_DIR, 'chemvid.mp4')
-positions_path = os.path.join(BASE_DIR, 'chemposn')
+video_path = os.path.join(BASE_DIR, 'chemistry_parking_video.mp4')
+positions_path = os.path.join(BASE_DIR, 'chemistry_parking_positions')
 
 # Video feed
 cap = cv2.VideoCapture(video_path)
@@ -38,9 +38,9 @@ width, height = 150, 197
 fps = cap.get(cv2.CAP_PROP_FPS)
 fps = fps if fps > 0 else 25
 
-# Use higher frame rate for streaming to make it smoother
+# Use appropriate frame rate for streaming
 if args.stream:
-    fps = min(fps * 2, 60)  # Double the fps for streaming, max 60 fps
+    fps = min(fps * 1.2, 30)  # Slightly increase fps for streaming, max 30 fps
 
 def checkParkingSpace(imgPro):
     global prev_parking_status
@@ -107,8 +107,8 @@ while True:
     # Timing
     elapsed = time.time() - start_time
     if args.stream:
-        # Faster frame rate for streaming
-        delay = max(0.001, 1.0 / fps - elapsed)
+        # Comfortable frame rate for streaming
+        delay = max(0.02, 1.0 / fps - elapsed)  # Minimum 20ms delay for smoother viewing
     else:
         # Normal frame rate for detection only
         delay = max(0.005, 1.0 / fps - elapsed)

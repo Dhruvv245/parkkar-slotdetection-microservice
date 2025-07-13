@@ -1,0 +1,49 @@
+services:
+  parkkar-detection:
+    build: .
+    container_name: parkkar-detection-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - NODE_SERVER_URL=http://host.docker.internal:3000/api/v1/parkings/slot-update
+    volumes:
+      # Mount video files if they're large and stored separately
+      # - ./videos:/app/videos:ro
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a reverse proxy like nginx
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: parkkar-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - parkkar-detection
+  #   restart: unless-stopped
+
+networks:
+  default:
+    name: parkkar-network
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

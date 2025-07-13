@@ -1,0 +1,104 @@
+# Python
+
+**pycache**
+_.pyc
+_.pyo
+_.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage._
+.cache
+nosetests.xml
+coverage.xml
+_.cover
+_.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Virtual environments
+
+venv/
+env/
+ENV/
+.venv/
+
+# IDEs
+
+.vscode/
+.idea/
+_.swp
+_.swo
+\*~
+
+# OS
+
+.DS*Store
+.DS_Store?
+.*\*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation
+
+README.md
+\*.md
+
+# Git
+
+.git/
+.gitignore
+
+# Docker
+
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Development files
+
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+
+logs/
+\*.log
+
+# Temporary files
+
+temp/
+tmp/
+\*.tmp
+
+# Backup files
+
+_.bak
+_.backup
+
+# Build artifacts
+
+build/
+dist/
+\*.egg-info/
+
+# Large video files (if you want to exclude them)
+
+# Uncomment these lines if videos are stored separately
+
+# \*.mp4
+
+# \*.avi
+
+# \*.mov
+
+# \*.mkv

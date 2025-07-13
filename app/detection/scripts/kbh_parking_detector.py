@@ -18,29 +18,33 @@ parser.add_argument('--stream', action='store_true', help='Enable MJPEG streamin
 args = parser.parse_args()
 
 # --- Config ---
-PARKING_ID = "5c88fa8cf4afda39709c2970"
+PARKING_ID = "68700289a320c9d36bd397a4"
 
 # Video feed
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-video_path = os.path.join(BASE_DIR, 'chemvid.mp4')
-positions_path = os.path.join(BASE_DIR, 'chemposn')
+video_path = os.path.join(BASE_DIR, 'kbh_parking_video.mp4')
+positions_path = os.path.join(BASE_DIR, 'kbh_parking_positions')
 
-# Video feed
 cap = cv2.VideoCapture(video_path)
 
 with open(positions_path, 'rb') as f:
     posList = pickle.load(f)
 
 prev_parking_status = [False] * len(posList)
-width, height = 150, 197
+width, height = 200, 200
 
 # --- FPS Safe Defaults ---
 fps = cap.get(cv2.CAP_PROP_FPS)
 fps = fps if fps > 0 else 25
 
-# Use higher frame rate for streaming to make it smoother
+# Use appropriate frame rate for streaming
 if args.stream:
-    fps = min(fps * 2, 60)  # Double the fps for streaming, max 60 fps
+    fps = min(fps * 1.2, 30)  # Slightly increase fps for streaming, max 30 fps
+def rescaleframe(frame, scale=0.5):
+    width = int(frame.shape[1] * scale)
+    height = int(frame.shape[0] * scale)
+    dimensions = (width, height)
+    return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
 
 def checkParkingSpace(imgPro):
     global prev_parking_status
@@ -49,19 +53,21 @@ def checkParkingSpace(imgPro):
 
     for pos in posList:
         x, y = pos
+
         imgCrop = imgPro[y:y + height, x:x + width]
         count = cv2.countNonZero(imgCrop)
 
-        if count < 2000:
+        if count < 4500:
             color = (0, 255, 0)
             thickness = 5
             spaceCounter += 1
-            occupied = False
+            occupied = False # parking space is free
         else:
             color = (0, 0, 255)
             thickness = 2
-            occupied = True
-        cv2.rectangle(img, pos, (pos[0] + width, pos[1] + height), color, thickness)
+            occupied = True # parking space is occupied
+        # Optionally draw rectangles or overlays here if needed
+
         parking_status.append(occupied)
 
     # Check for changes in parking space statuses
@@ -77,7 +83,8 @@ while True:
     if not success:
         break
 
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_r = rescaleframe(img)
+    imgGray = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
     imgBlur = cv2.GaussianBlur(imgGray, (3, 3), 1)
     imgThreshold = cv2.adaptiveThreshold(imgBlur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                          cv2.THRESH_BINARY_INV, 25, 16)
@@ -89,7 +96,7 @@ while True:
 
     if args.stream:
         # Encode frame as JPEG
-        ret, jpeg = cv2.imencode('.jpg', img)
+        ret, jpeg = cv2.imencode('.jpg', img_r)
         if not ret:
             continue
 
@@ -107,8 +114,8 @@ while True:
     # Timing
     elapsed = time.time() - start_time
     if args.stream:
-        # Faster frame rate for streaming
-        delay = max(0.001, 1.0 / fps - elapsed)
+        # Comfortable frame rate for streaming
+        delay = max(0.02, 1.0 / fps - elapsed)  # Minimum 20ms delay for smoother viewing
     else:
         # Normal frame rate for detection only
         delay = max(0.005, 1.0 / fps - elapsed)

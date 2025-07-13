@@ -4,19 +4,38 @@ from pydantic import BaseModel
 import os
 from app.detection.runner import run_detection_script, stream_video_and_detect
 
-app = FastAPI()
+app = FastAPI(
+    title="ParkKar Slot Detection API",
+    description="Real-time parking slot detection and streaming service",
+    version="1.0.0"
+)
 
 # Map of parking lot IDs to script names
 PARKING_SCRIPTS = {
-    '5c88fa8cf4afda39709c2974': 'cb.py',
-    '5c88fa8cf4afda39709c2970': 'chemcounter.py',
-    '661661e96104b67c07d092ec': 'workshopcounter.py',
-    '68700289a320c9d36bd397a4': 'kbhcounter.py',
+    '5c88fa8cf4afda39709c2974': 'cb_parking_detector.py',
+    '5c88fa8cf4afda39709c2970': 'chemistry_parking_detector.py',
+    '661661e96104b67c07d092ec': 'workshop_parking_detector.py',
+    '68700289a320c9d36bd397a4': 'kbh_parking_detector.py',
 }
 
 class SlotUpdatePayload(BaseModel):
     parkingId: str
     freeSlots: int
+
+@app.get("/")
+def root():
+    return {"message": "ParkKar Slot Detection API", "version": "1.0.0", "status": "running"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "service": "parkkar-detection"}
+
+@app.get("/parking-lots")
+def get_parking_lots():
+    return {
+        "parking_lots": list(PARKING_SCRIPTS.keys()),
+        "total": len(PARKING_SCRIPTS)
+    }
 
 @app.get("/detect/{parking_id}")
 def run_detection(parking_id: str):

@@ -36,6 +36,10 @@ width, height = 300, 250
 fps = cap.get(cv2.CAP_PROP_FPS)
 fps = fps if fps > 0 else 25
 
+# Use higher frame rate for streaming to make it smoother
+if args.stream:
+    fps = min(fps * 2, 60)  # Double the fps for streaming, max 60 fps
+
 def rescaleframe(frame, scale=0.5):
     width = int(frame.shape[1] * scale)
     height = int(frame.shape[0] * scale)
@@ -96,14 +100,23 @@ while True:
         if not ret:
             continue
 
-        # Write MJPEG frame to stdout
-        sys.stdout.buffer.write(b'--frame\r\n')
-        sys.stdout.buffer.write(b'Content-Type: image/jpeg\r\n\r\n')
-        sys.stdout.buffer.write(jpeg.tobytes())
-        sys.stdout.buffer.write(b'\r\n')
-        sys.stdout.flush()
+        # Proper MJPEG boundary format for streaming
+        frame_data = (
+            b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n'
+            b'Content-Length: ' + str(len(jpeg.tobytes())).encode() + b'\r\n\r\n' +
+            jpeg.tobytes() + b'\r\n'
+        )
+        
+        sys.stdout.buffer.write(frame_data)
+        sys.stdout.buffer.flush()
 
     # Timing
     elapsed = time.time() - start_time
-    delay = max(0.005, 1.0 / fps - elapsed)
+    if args.stream:
+        # Faster frame rate for streaming
+        delay = max(0.001, 1.0 / fps - elapsed)
+    else:
+        # Normal frame rate for detection only
+        delay = max(0.005, 1.0 / fps - elapsed)
     time.sleep(delay)

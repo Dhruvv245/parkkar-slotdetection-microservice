@@ -1,6 +1,8 @@
 import requests
+import os
 
-NODE_SERVER_URL = "http://localhost:3000/api/v1/parkings/slot-update"
+# Use environment variable with fallback for production deployment
+NODE_SERVER_URL = os.getenv("NODE_SERVER_URL", "https://parkkar-production.up.railway.app/api/v1/parkings/slot-update")
 
 def send_slot_update(parking_id: str, slot_count: int):
     payload = {

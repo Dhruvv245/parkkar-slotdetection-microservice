@@ -69,30 +69,31 @@ def run_detection_script(parking_id: str, script_path: str):
 
 
 def stream_video_and_detect(parking_id: str, script_path: str):
-    """Stream video with detection using proper MJPEG format"""
+    """Stream video with detection using optimized MJPEG format"""
     import subprocess
     
     try:
-        logger.info(f"Starting stream for {parking_id} using {script_path}")
+        logger.info(f"Starting optimized stream for {parking_id} using {script_path}")
         logger.info(f"Using Python executable: {PYTHON_EXECUTABLE}")
         
-        # Start process with binary stdout to handle MJPEG data
+        # Start process with optimized settings for streaming
         process = subprocess.Popen(
             [PYTHON_EXECUTABLE, "-u", script_path, "--stream"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=BASE_DIR,
-            bufsize=0  # Unbuffered for real-time streaming
+            bufsize=0,  # Unbuffered for real-time streaming
+            preexec_fn=None if os.name == 'nt' else lambda: os.nice(10)  # Lower priority to prevent blocking
         )
 
         try:
             while True:
-                # Read data from the process in larger chunks for better performance
-                data = process.stdout.read(8192)
+                # Read data in smaller chunks for lower latency
+                data = process.stdout.read(4096)
                 if not data:
                     break
                 
-                # Yield the raw binary data as received from the script
+                # Yield immediately for lower latency
                 yield data
 
         except GeneratorExit:
@@ -107,7 +108,7 @@ def stream_video_and_detect(parking_id: str, script_path: str):
         finally:
             try:
                 process.terminate()
-                process.wait(timeout=5)
+                process.wait(timeout=3)  # Shorter timeout for faster cleanup
             except subprocess.TimeoutExpired:
                 process.kill()
             except:

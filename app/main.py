@@ -73,7 +73,7 @@ def run_detection(parking_id: str):
 
 @app.get("/stream/{parking_id}")
 def stream_and_detect(parking_id: str):
-    """Stream video with real-time parking detection"""
+    """Stream video with real-time parking detection - optimized for low latency"""
     if parking_id not in PARKING_SCRIPTS:
         raise HTTPException(status_code=404, detail="Invalid parking lot ID")
 
@@ -88,7 +88,14 @@ def stream_and_detect(parking_id: str):
     try:
         return StreamingResponse(
             stream_video_and_detect(parking_id, script_path),
-            media_type="multipart/x-mixed-replace; boundary=frame"
+            media_type="multipart/x-mixed-replace; boundary=frame",
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no"  # Disable nginx buffering for lower latency
+            }
         )
     except Exception as e:
         logger.error(f"Error starting stream for {parking_id}: {e}")

@@ -58,7 +58,7 @@ fps = fps if fps > 0 else 25
 
 # Use appropriate frame rate for streaming
 if args.stream:
-    fps = min(fps * 1.2, 30)  # Slightly increase fps for streaming, max 30 fps
+    fps = min(fps * 1.5, 25)  # Increase fps for streaming, max 25 fps for better performance
 
 # --- Main Loop ---
 while True:
@@ -81,13 +81,15 @@ while True:
     # Detection
     check_parking_space(img_dilate)
 
-    # MJPEG Streaming
+    # MJPEG Streaming with optimizations
     if args.stream:
-        ret, jpeg = cv2.imencode('.jpg', img)
+        # Encode with lower quality for faster processing and smaller size
+        encode_params = [cv2.IMWRITE_JPEG_QUALITY, 70]  # Reduce quality for speed
+        ret, jpeg = cv2.imencode('.jpg', img, encode_params)
         if not ret:
             continue
         
-        # Proper MJPEG boundary format for streaming
+        # Streamlined MJPEG boundary format
         frame_data = (
             b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n'
@@ -95,14 +97,15 @@ while True:
             jpeg.tobytes() + b'\r\n'
         )
         
+        # Write and flush immediately for low latency
         sys.stdout.buffer.write(frame_data)
         sys.stdout.buffer.flush()
 
-    # Timing
+    # Optimized timing for streaming
     elapsed = time.time() - start_time
     if args.stream:
-        # Comfortable frame rate for streaming
-        delay = max(0.02, 1.0 / fps - elapsed)  # Minimum 20ms delay for smoother viewing
+        # Faster frame rate for smoother streaming
+        delay = max(0.01, 1.0 / fps - elapsed)  # Minimum 10ms delay for smoother streaming
     else:
         # Normal frame rate for detection only
         delay = max(0.005, 1.0 / fps - elapsed)

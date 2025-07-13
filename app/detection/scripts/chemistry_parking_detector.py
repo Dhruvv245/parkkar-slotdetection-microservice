@@ -40,7 +40,7 @@ fps = fps if fps > 0 else 25
 
 # Use appropriate frame rate for streaming
 if args.stream:
-    fps = min(fps * 1.2, 30)  # Slightly increase fps for streaming, max 30 fps
+    fps = min(fps * 1.5, 25)  # Increase fps for streaming, max 25 fps for better performance
 
 def checkParkingSpace(imgPro):
     global prev_parking_status
@@ -89,7 +89,9 @@ while True:
 
     if args.stream:
         # Encode frame as JPEG
-        ret, jpeg = cv2.imencode('.jpg', img)
+        # Encode with lower quality for faster processing and smaller size
+        encode_params = [cv2.IMWRITE_JPEG_QUALITY, 70]  # Reduce quality for speed
+        ret, jpeg = cv2.imencode('.jpg', img, encode_params)
         if not ret:
             continue
 
@@ -108,7 +110,7 @@ while True:
     elapsed = time.time() - start_time
     if args.stream:
         # Comfortable frame rate for streaming
-        delay = max(0.02, 1.0 / fps - elapsed)  # Minimum 20ms delay for smoother viewing
+        delay = max(0.01, 1.0 / fps - elapsed)  # Minimum 10ms delay for smoother streaming
     else:
         # Normal frame rate for detection only
         delay = max(0.005, 1.0 / fps - elapsed)

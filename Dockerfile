@@ -48,12 +48,12 @@ RUN useradd --create-home --shell /bin/bash --uid 1000 app && \
     chown -R app:app /app
 USER app
 
-# Expose port
-EXPOSE 8000
+# Expose port (Railway will set PORT environment variable)
+EXPOSE $PORT
 
-# Health check (simplified)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Health check (simplified) - disable during deployment
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+#     CMD curl -f http://localhost:$PORT/health || exit 1
 
-# Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Command to run the application - use PORT environment variable
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1

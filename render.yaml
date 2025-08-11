@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: parkkar-slot-detection
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_SERVER_URL
+        value: https://parkkar.onrender.com/api/v1/parkings/slot-update
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: LOG_LEVEL
+        value: info
+      - key: PORT
+        value: "8000"
+      - key: HOST
+        value: "0.0.0.0"
+      - key: FPS_LIMIT
+        value: "25"
+      - key: DETECTION_THRESHOLD
+        value: "10000"

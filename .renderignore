@@ -1,0 +1,16 @@
+# Render ignore file - exclude these from deployment
+
+.git
+.gitignore
+.env.local
+.env.example
+logs/
+venv/
+**pycache**/
+_.pyc
+_.pyo
+\*.pyd
+.Python
+README.md
+docker-compose.yml
+.dockerignore

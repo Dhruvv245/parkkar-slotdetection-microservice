@@ -52,3 +52,6 @@ parkkar-slotdetection-microservice/
 🔗 Main App Repo: [ParkKar](https://github.com/Dhruvv245/ParkKar)
 
 This microservice is part of the full ParkKar ecosystem. For the frontend, real-time updates, and dashboards, refer to the main repository. 🚗💡
+
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000
